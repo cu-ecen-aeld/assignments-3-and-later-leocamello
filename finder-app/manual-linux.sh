@@ -12,6 +12,7 @@ BUSYBOX_VERSION=1_33_1
 FINDER_APP_DIR=$(realpath $(dirname $0))
 ARCH=arm64
 CROSS_COMPILE=aarch64-none-linux-gnu-
+SYSROOT=$(${CROSS_COMPILE}gcc -print-sysroot)
 
 if [ $# -lt 1 ]
 then
@@ -34,10 +35,19 @@ if [ ! -e ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ]; then
     echo "Checking out version ${KERNEL_VERSION}"
     git checkout ${KERNEL_VERSION}
 
+    echo "Assignment 3 QEMU build - clean"
     make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} mrproper
+    
+    echo "Assignment 3 QEMU build - defconfig"
     make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} defconfig
+    
+    echo "Assignment 3 QEMU build - vmlinux"
     make -j4 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} all
+    
+    echo "Assignment 3 QEMU build - modules"
     make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} modules
+    
+    echo "Assignment 3 QEMU build - devicetree"
     make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} dtbs
 fi
 
@@ -52,14 +62,19 @@ then
     sudo rm  -rf ${OUTDIR}/rootfs
 fi
 
+echo "Creating a folder tree"
 mkdir ${OUTDIR}/rootfs
 cd ${OUTDIR}/rootfs
 mkdir bin dev etc home lib lib64 proc sbin sys tmp usr var
 mkdir usr/bin usr/lib usr/sbin
 mkdir -p var/log
 
-#tree -d
+echo "Make the contents owned by root"
+cd ${OUTDIR}/rootfs
+sudo chown -R root:root *
 
+
+echo "Building Busybox"
 cd "$OUTDIR"
 if [ ! -d "${OUTDIR}/busybox" ]
 then
@@ -72,8 +87,8 @@ else
     cd busybox
 fi
 
-make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CONFIG_PREFIX=${OUTDIR}/rootfs
-make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CONFIG_PREFIX=${OUTDIR}/rootfs install
+echo "Installing Busybox"
+sudo make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CONFIG_PREFIX=${OUTDIR}/rootfs PATH=$PATH install
 
 cd ${OUTDIR}/rootfs
 
@@ -82,15 +97,18 @@ ${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter"
 ${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library"
 
 cd ${OUTDIR}/rootfs
-cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/ld-linux-aarch64.so.1 lib
-cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/ld-2.33.so lib
-cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/libresolv.so.2 lib
-cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/libresolv-2.33.so lib
-cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/libm.so.6 lib
-cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/libm-2.33.so lib
-cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/libc.so.6 lib
-cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/libc-2.33.so lib
 
+echo "Copying Busybox Shared libraries"
+sudo cp -a SYSROOT/lib/ld-linux-aarch64.so.1 lib
+sudo cp -a SYSROOT/lib64/ld-2.33.so lib64
+sudo cp -a SYSROOT/lib64/libresolv.so.2 lib64
+sudo cp -a SYSROOT/lib64/libresolv-2.33.so lib64
+sudo cp -a SYSROOT/lib64/libm.so.6 lib64
+sudo cp -a SYSROOT/lib64/libm-2.33.so lib64
+sudo cp -a SYSROOT/lib64/libc.so.6 lib64
+sudo cp -a SYSROOT/lib64/libc-2.33.so lib64
+
+echo "Devices"
 cd ${OUTDIR}/rootfs
 sudo mknod -m 666 dev/null c 1 3
 sudo mknod -m 600 dev/console c 5 1
@@ -99,15 +117,15 @@ cd ${FINDER_APP_DIR}
 make clean
 make CROSS_COMPILE=${CROSS_COMPILE} all
 
-cp ${FINDER_APP_DIR}/writer ${OUTDIR}/rootfs/home
-cp ${FINDER_APP_DIR}/writer.sh ${OUTDIR}/rootfs/home
-cp ${FINDER_APP_DIR}/finder.sh ${OUTDIR}/rootfs/home
-cp ${FINDER_APP_DIR}/finder-test.sh ${OUTDIR}/rootfs/home
-cp ${FINDER_APP_DIR}/autorun-qemu.sh ${OUTDIR}/rootfs/home
+sudo cp ${FINDER_APP_DIR}/writer ${OUTDIR}/rootfs/home
+sudo cp ${FINDER_APP_DIR}/writer.sh ${OUTDIR}/rootfs/home
+sudo cp ${FINDER_APP_DIR}/finder.sh ${OUTDIR}/rootfs/home
+sudo cp ${FINDER_APP_DIR}/finder-test.sh ${OUTDIR}/rootfs/home
+sudo cp ${FINDER_APP_DIR}/autorun-qemu.sh ${OUTDIR}/rootfs/home
 
-mkdir ${OUTDIR}/rootfs/home/conf
-cp ${FINDER_APP_DIR}/conf/assignment.txt ${OUTDIR}/rootfs/home/conf
-cp ${FINDER_APP_DIR}/conf/username.txt ${OUTDIR}/rootfs/home/conf
+sudo mkdir ${OUTDIR}/rootfs/home/conf
+sudo cp ${FINDER_APP_DIR}/conf/assignment.txt ${OUTDIR}/rootfs/home/conf
+sudo cp ${FINDER_APP_DIR}/conf/username.txt ${OUTDIR}/rootfs/home/conf
 
 cd ${OUTDIR}/rootfs
 sudo chown -R root:root *

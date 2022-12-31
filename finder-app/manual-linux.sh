@@ -88,7 +88,7 @@ else
 fi
 
 echo "Installing Busybox"
-sudo make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CONFIG_PREFIX=${OUTDIR}/rootfs PATH=$PATH install
+sudo make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CONFIG_PREFIX=${OUTDIR}/rootfs PATH=${PATH} install
 
 cd ${OUTDIR}/rootfs
 
@@ -99,14 +99,14 @@ ${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library"
 cd ${OUTDIR}/rootfs
 
 echo "Copying Busybox Shared libraries"
-sudo cp -a SYSROOT/lib/ld-linux-aarch64.so.1 lib
-sudo cp -a SYSROOT/lib64/ld-2.33.so lib64
-sudo cp -a SYSROOT/lib64/libresolv.so.2 lib64
-sudo cp -a SYSROOT/lib64/libresolv-2.33.so lib64
-sudo cp -a SYSROOT/lib64/libm.so.6 lib64
-sudo cp -a SYSROOT/lib64/libm-2.33.so lib64
-sudo cp -a SYSROOT/lib64/libc.so.6 lib64
-sudo cp -a SYSROOT/lib64/libc-2.33.so lib64
+sudo cp -a ${SYSROOT}/lib/ld-linux-aarch64.so.1 lib
+sudo cp -a ${SYSROOT}/lib64/ld-2.33.so lib64
+sudo cp -a ${SYSROOT}/lib64/libresolv.so.2 lib64
+sudo cp -a ${SYSROOT}/lib64/libresolv-2.33.so lib64
+sudo cp -a ${SYSROOT}/lib64/libm.so.6 lib64
+sudo cp -a ${SYSROOT}/lib64/libm-2.33.so lib64
+sudo cp -a ${SYSROOT}/lib64/libc.so.6 lib64
+sudo cp -a ${SYSROOT}/lib64/libc-2.33.so lib64
 
 echo "Devices"
 cd ${OUTDIR}/rootfs

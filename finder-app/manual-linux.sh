@@ -83,13 +83,13 @@ ${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library"
 
 cd ${OUTDIR}/rootfs
 cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/ld-linux-aarch64.so.1 lib
-cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib64/ld-2.33.so lib64
-cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib64/libresolv.so.2 lib64
-cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib64/libresolv-2.33.so lib64
-cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib64/libm.so.6 lib64
-cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib64/libm-2.33.so lib64
-cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib64/libc.so.6 lib64
-cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib64/libc-2.33.so lib64
+cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/ld-2.33.so lib
+cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/libresolv.so.2 lib
+cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/libresolv-2.33.so lib
+cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/libm.so.6 lib
+cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/libm-2.33.so lib
+cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/libc.so.6 lib
+cp -a $(${CROSS_COMPILE}gcc -print-sysroot)/lib/libc-2.33.so lib
 
 cd ${OUTDIR}/rootfs
 sudo mknod -m 666 dev/null c 1 3
